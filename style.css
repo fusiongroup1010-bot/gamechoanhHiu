@@ -1,0 +1,763 @@
+/* ==========================================================================
+   GIAO DIỆN PASTEL HỒNG / KEM - MOBILE FIRST & RESPONSIVE
+   ========================================================================== */
+
+:root {
+  --bg-top: #fff6f0;
+  --bg-bottom: #ffd6e4;
+  --card-bg: rgba(255, 252, 249, 0.94);
+  --card-border: #ffc2d4;
+  --primary: #ff5d8f;
+  --primary-hover: #ff3e79;
+  --primary-shadow: rgba(255, 93, 143, 0.35);
+  --secondary-bg: #fff0f5;
+  --secondary-text: #d64575;
+  --text-main: #5c374c;
+  --text-muted: #8c6278;
+  --accent-cream: #fff5eb;
+  --error-color: #e5386d;
+  --font-heading: "Baloo 2", cursive, sans-serif;
+  --font-body: "Quicksand", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* Không có thanh cuộn ngang/dọc ngoài ý muốn */
+  background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
+  font-family: var(--font-body);
+  color: var(--text-main);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+#app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+#gameCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 1;
+  touch-action: none;
+}
+
+/* ==========================================================================
+   THANH TIẾN ĐỘ (HUD) Ở TRÊN CÙNG
+   ========================================================================== */
+
+.hud {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top, 12px));
+  left: 12px;
+  right: 12px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.hud-progress-card {
+  pointer-events: auto;
+  background: rgba(255, 252, 249, 0.9);
+  border: 2px solid var(--card-border);
+  border-radius: 999px;
+  padding: 6px 14px;
+  box-shadow: 0 6px 16px rgba(255, 117, 159, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 170px;
+  max-width: 65vw;
+  backdrop-filter: blur(6px);
+}
+
+.hud-text {
+  font-family: var(--font-heading);
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.hud-bar-track {
+  width: 100%;
+  height: 7px;
+  background: #ffe3ec;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.hud-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #ff85a9 0%, #ff477e 100%);
+  border-radius: 999px;
+  transition: width 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.hud-actions {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px solid var(--card-border);
+  background: rgba(255, 252, 249, 0.92);
+  box-shadow: 0 4px 12px rgba(255, 117, 159, 0.2);
+  font-size: 1.15rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.icon-btn:hover {
+  transform: translateY(-2px);
+  background: #fff;
+}
+
+.icon-btn:active {
+  transform: scale(0.92);
+}
+
+/* ==========================================================================
+   MÀN HÌNH OVERLAY & THẺ CUTE CARD
+   ========================================================================== */
+
+.overlay-screen {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(255, 224, 235, 0.42);
+  backdrop-filter: blur(4px);
+  overflow-y: auto;
+  touch-action: pan-y;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.cute-card {
+  width: 100%;
+  max-width: 430px;
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  background: var(--card-bg);
+  border: 3px solid var(--card-border);
+  border-radius: 28px;
+  padding: 24px 20px;
+  text-align: center;
+  box-shadow:
+    0 18px 40px rgba(214, 69, 117, 0.18),
+    0 0 0 6px rgba(255, 255, 255, 0.55);
+  animation: fadePopIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.card-open-anim {
+  animation: openGreetingCard 0.52s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes fadePopIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes openGreetingCard {
+  0% {
+    opacity: 0;
+    transform: perspective(700px) rotateX(-18deg) scale(0.82);
+  }
+  65% {
+    opacity: 1;
+    transform: perspective(700px) rotateX(4deg) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(700px) rotateX(0deg) scale(1);
+  }
+}
+
+.card-badge {
+  display: inline-block;
+  background: #ffe3ee;
+  color: var(--secondary-text);
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 5px 14px;
+  border-radius: 999px;
+  margin-bottom: 10px;
+  border: 1px solid #ffc4d9;
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: clamp(1.35rem, 4.8vw, 1.75rem);
+  color: var(--text-main);
+  line-height: 1.25;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  font-size: 0.98rem;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  line-height: 1.45;
+}
+
+/* ==========================================================================
+   MÀN LOADING
+   ========================================================================== */
+
+.loading-heart {
+  font-size: 3rem;
+  margin-bottom: 8px;
+  animation: heartBeat 1s infinite ease-in-out;
+}
+
+@keyframes heartBeat {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.18); }
+}
+
+.loading-bar-track {
+  width: 100%;
+  height: 12px;
+  background: #ffe3ec;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid #ffc2d4;
+}
+
+.loading-bar-fill {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #ff85a9, #ff477e);
+  transition: width 0.2s ease;
+}
+
+/* ==========================================================================
+   MÀN MẬT KHẨU
+   ========================================================================== */
+
+.hint-box {
+  background: var(--accent-cream);
+  border: 1.5px dashed #ffb3c6;
+  border-radius: 16px;
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  color: var(--text-main);
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+
+.hint-label {
+  font-weight: 700;
+  color: var(--primary);
+  margin-right: 4px;
+}
+
+.pwd-input {
+  width: 100%;
+  padding: 13px 16px;
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  letter-spacing: 2px;
+  text-align: center;
+  border-radius: 18px;
+  border: 2.5px solid #ffc2d4;
+  background: #fff;
+  color: var(--text-main);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  margin-bottom: 10px;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.pwd-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(255, 93, 143, 0.18);
+}
+
+.error-msg {
+  color: var(--error-color);
+  font-weight: 700;
+  font-size: 0.94rem;
+  margin-bottom: 12px;
+}
+
+.shake {
+  animation: shakeAnim 0.42s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes shakeAnim {
+  10%, 90% { transform: translate3d(-4px, 0, 0); }
+  20%, 80% { transform: translate3d(6px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
+  40%, 60% { transform: translate3d(8px, 0, 0); }
+}
+
+/* ==========================================================================
+   MÀN CHÀO & MASCOT PREVIEW
+   ========================================================================== */
+
+.mascot-preview {
+  position: relative;
+  width: 96px;
+  height: 88px;
+  margin: 4px auto 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mascot-css-avatar {
+  position: relative;
+  width: 72px;
+  height: 64px;
+  background: radial-gradient(circle at 35% 30%, #ffdbe7 0%, #ffa6c1 75%, #ff8fb1 100%);
+  border-radius: 50% 50% 46% 46%;
+  border: 2.5px solid #ff7aa2;
+  box-shadow: 0 8px 16px rgba(255, 105, 149, 0.25);
+  animation: mascotBounce 1.4s infinite ease-in-out;
+}
+
+.mascot-css-avatar .ear {
+  position: absolute;
+  top: -10px;
+  width: 22px;
+  height: 24px;
+  background: #ffb3c9;
+  border: 2.5px solid #ff7aa2;
+  border-radius: 50%;
+  z-index: -1;
+}
+
+.mascot-css-avatar .ear.left {
+  left: 6px;
+  transform: rotate(-18deg);
+}
+
+.mascot-css-avatar .ear.right {
+  right: 6px;
+  transform: rotate(18deg);
+}
+
+.mascot-css-avatar .eye {
+  position: absolute;
+  top: 26px;
+  width: 7px;
+  height: 7px;
+  background: #4a2538;
+  border-radius: 50%;
+}
+
+.mascot-css-avatar .eye.left { left: 20px; }
+.mascot-css-avatar .eye.right { right: 20px; }
+
+.mascot-css-avatar .blush {
+  position: absolute;
+  top: 33px;
+  width: 12px;
+  height: 6px;
+  background: rgba(255, 71, 126, 0.45);
+  border-radius: 50%;
+}
+
+.mascot-css-avatar .blush.left { left: 11px; }
+.mascot-css-avatar .blush.right { right: 11px; }
+
+.mascot-css-avatar .mouth {
+  position: absolute;
+  top: 33px;
+  left: 50%;
+  width: 10px;
+  height: 5px;
+  border-bottom: 2.2px solid #4a2538;
+  border-radius: 0 0 10px 10px;
+  transform: translateX(-50%);
+}
+
+.floating-heart {
+  position: absolute;
+  font-size: 1.1rem;
+  animation: floatUpDown 2s infinite ease-in-out;
+}
+
+.floating-heart.h1 {
+  top: -4px;
+  right: 2px;
+  color: #ff4d79;
+}
+
+.floating-heart.h2 {
+  bottom: 4px;
+  left: 0;
+  animation-delay: 0.6s;
+}
+
+@keyframes mascotBounce {
+  0%, 100% { transform: translateY(0) scale(1, 1); }
+  50% { transform: translateY(-6px) scale(0.96, 1.05); }
+}
+
+@keyframes floatUpDown {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.guide-box {
+  background: var(--accent-cream);
+  border: 1.5px solid #ffd5e2;
+  border-radius: 18px;
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sub-guide {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 2px;
+}
+
+.saved-notice {
+  font-size: 0.88rem;
+  color: var(--secondary-text);
+  background: #ffe8f0;
+  border-radius: 12px;
+  padding: 6px 10px;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   KHUNG ẢNH KỶ NIỆM & KHUNG THAY THẾ KHI THIẾU ẢNH
+   ========================================================================== */
+
+.photo-frame {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  max-height: 230px;
+  background: #fff5f8;
+  border: 4px solid #fff;
+  outline: 2px solid #ffc2d4;
+  border-radius: 20px;
+  overflow: hidden;
+  margin: 10px auto 14px;
+  box-shadow: 0 8px 20px rgba(214, 69, 117, 0.14);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.final-photo-frame {
+  max-height: 210px;
+}
+
+.photo-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.photo-fallback {
+  width: 100%;
+  height: 100%;
+  padding: 16px;
+  background: repeating-linear-gradient(
+    -45deg,
+    #fff4f7,
+    #fff4f7 12px,
+    #ffe8f0 12px,
+    #ffe8f0 24px
+  );
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 6px;
+}
+
+.fallback-icon {
+  font-size: 2.1rem;
+}
+
+.fallback-title {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  color: var(--secondary-text);
+}
+
+.fallback-path {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.8);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.love-quote {
+  background: var(--accent-cream);
+  border-left: 4px solid var(--primary);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: var(--text-main);
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+/* ==========================================================================
+   MÀN CHIẾN THẮNG & HIỆU ỨNG TYPEWRITER
+   ========================================================================== */
+
+.victory-card {
+  max-width: 470px;
+}
+
+.letter-box {
+  background: #fff9f5;
+  border: 2px dashed #ffb3c6;
+  border-radius: 18px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  min-height: 92px;
+  max-height: 165px;
+  overflow-y: auto;
+  text-align: left;
+}
+
+.typewriter-text {
+  font-size: 0.96rem;
+  line-height: 1.58;
+  color: var(--text-main);
+  font-weight: 600;
+  white-space: pre-wrap;
+}
+
+.typewriter-text::after {
+  content: "💗";
+  display: inline-block;
+  margin-left: 4px;
+  animation: blinkCursor 0.9s infinite;
+}
+
+@keyframes blinkCursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+/* ==========================================================================
+   ALBUM KỶ NIỆM (5 ẢNH ĐÃ MỞ KHÓA)
+   ========================================================================== */
+
+.album-card {
+  max-width: 560px;
+  max-height: calc(100dvh - 28px);
+  display: flex;
+  flex-direction: column;
+}
+
+.album-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.album-header .title {
+  margin-bottom: 0;
+  font-size: 1.3rem;
+  text-align: left;
+}
+
+.close-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid #ffc2d4;
+  background: #fff0f5;
+  color: var(--secondary-text);
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.album-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  overflow-y: auto;
+  padding: 4px 2px 12px;
+  max-height: 62dvh;
+}
+
+@media (min-width: 520px) {
+  .album-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.album-item {
+  background: #fff;
+  border: 2px solid #ffd1df;
+  border-radius: 18px;
+  padding: 10px;
+  text-align: left;
+  box-shadow: 0 4px 12px rgba(214, 69, 117, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.album-item-badge {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.album-item .photo-frame {
+  margin: 0;
+  max-height: 150px;
+}
+
+.album-item-msg {
+  font-size: 0.88rem;
+  color: var(--text-main);
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+.album-footer {
+  margin-top: 8px;
+}
+
+/* ==========================================================================
+   NÚT BẤM
+   ========================================================================== */
+
+.button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.primary-btn,
+.secondary-btn {
+  font-family: var(--font-heading);
+  font-size: 1.08rem;
+  font-weight: 700;
+  padding: 12px 24px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  border: none;
+  width: 100%;
+}
+
+.button-group .primary-btn,
+.button-group .secondary-btn {
+  flex: 1 1 170px;
+}
+
+.primary-btn {
+  background: linear-gradient(135deg, #ff709b 0%, #ff477e 100%);
+  color: #fff;
+  box-shadow: 0 8px 18px var(--primary-shadow);
+}
+
+.primary-btn:hover {
+  background: linear-gradient(135deg, #ff5d8f 0%, #ff2e6d 100%);
+  transform: translateY(-2px);
+}
+
+.primary-btn:active {
+  transform: scale(0.96);
+}
+
+.secondary-btn {
+  background: var(--secondary-bg);
+  color: var(--secondary-text);
+  border: 2px solid #ffc2d4;
+}
+
+.secondary-btn:hover {
+  background: #ffe0eb;
+  transform: translateY(-2px);
+}
+
+.pulse-btn {
+  animation: subtlePulse 1.8s infinite ease-in-out;
+}
+
+@keyframes subtlePulse {
+  0%, 100% { box-shadow: 0 8px 18px rgba(255, 93, 143, 0.35); }
+  50% { box-shadow: 0 10px 26px rgba(255, 93, 143, 0.6); }
+}
+
+/* Tối ưu màn hình xoay ngang (landscape) trên điện thoại */
+@media (max-height: 520px) {
+  .cute-card {
+    padding: 14px 16px;
+    border-radius: 20px;
+  }
+  .mascot-preview {
+    display: none;
+  }
+  .photo-frame {
+    max-height: 135px;
+  }
+  .letter-box {
+    max-height: 95px;
+  }
+}

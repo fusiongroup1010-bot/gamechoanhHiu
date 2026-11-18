@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>Nhặt Tim - Quà Tặng 19/11</title>
+  <!-- Google Fonts hỗ trợ tiếng Việt: Quicksand & Baloo 2 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=3.5" />
+</head>
+<body>
+  <div id="app">
+    <!-- Canvas chính: vẽ nền mây/tim trôi, nhân vật, tim rơi, pháo giấy -->
+    <canvas id="gameCanvas" aria-label="Màn hình chơi game Nhặt Tim"></canvas>
+
+    <!-- Thanh HUD trên cùng khi đang trong màn chơi -->
+    <header id="hud" class="hud hidden" aria-live="polite">
+      <div class="hud-progress-card">
+        <span id="hudText" class="hud-text">Màn 1/5 · ❤ 0/5</span>
+        <div class="hud-bar-track">
+          <div id="hudBarFill" class="hud-bar-fill"></div>
+        </div>
+      </div>
+      <div class="hud-actions">
+        <button id="btnResetProgress" class="icon-btn" type="button" title="Xoá tiến độ & chơi lại từ đầu" aria-label="Chơi lại từ màn 1">
+          🔄
+        </button>
+        <button id="btnMute" class="icon-btn" type="button" title="Bật/Tắt nhạc" aria-label="Bật hoặc tắt nhạc">
+          🔊
+        </button>
+        <button id="btnPause" class="icon-btn" type="button" title="Tạm dừng" aria-label="Tạm dừng trò chơi">
+          ⏸️
+        </button>
+      </div>
+    </header>
+
+    <!-- 0. Màn hình Loading (Preload tài nguyên) -->
+    <section id="screenLoading" class="overlay-screen active" role="status">
+      <div class="card cute-card">
+        <div class="loading-heart" aria-hidden="true">💗</div>
+        <h1 class="title">Đang gói quà...</h1>
+        <p id="loadingStatus" class="subtitle">Chuẩn bị kỷ niệm cho hai đứa mình (0%)</p>
+        <div class="loading-bar-track">
+          <div id="loadingBarFill" class="loading-bar-fill"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 1. Màn hình Mật khẩu -->
+    <section id="screenPassword" class="overlay-screen hidden" aria-labelledby="pwdTitle">
+      <div id="passwordCard" class="card cute-card">
+        <div class="card-badge" aria-hidden="true">💌 Quà bí mật 19/11</div>
+        <h1 id="pwdTitle" class="title">Nhập mật mã tình yêu</h1>
+        <p class="hint-box">
+          <span class="hint-label">Gợi ý:</span>
+          <span id="passwordHintText"></span>
+        </p>
+        <form id="passwordForm" autocomplete="off" novalidate>
+          <input
+            id="passwordInput"
+            class="pwd-input"
+            type="text"
+            inputmode="text"
+            placeholder="DDMMYYYY"
+            maxlength="20"
+            aria-label="Mật khẩu ngày kỷ niệm"
+            required
+          />
+          <p id="passwordError" class="error-msg hidden" role="alert">Sai rồi, nghĩ lại nha</p>
+          <button type="submit" class="primary-btn">Xác nhận 💖</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- 2. Màn hình Chào -->
+    <section id="screenWelcome" class="overlay-screen hidden" aria-labelledby="welcomeTitle">
+      <div class="card cute-card">
+        <div class="mascot-preview" aria-hidden="true">
+          <span class="floating-heart h1">❤</span>
+          <span class="floating-heart h2">✨</span>
+          <div class="mascot-css-avatar">
+            <span class="ear left"></span>
+            <span class="ear right"></span>
+            <span class="eye left"></span>
+            <span class="eye right"></span>
+            <span class="blush left"></span>
+            <span class="blush right"></span>
+            <span class="mouth"></span>
+          </div>
+        </div>
+        <h1 id="welcomeTitle" class="title"></h1>
+        <div class="guide-box">
+          <p>🎯 <strong>Cách chơi:</strong> Di chuyển bé bông hồng qua trái/phải để hứng đủ <strong><span id="welcomeTargetHearts"></span> tim đỏ ❤</strong> mỗi màn.</p>
+          <p>💔 Tránh các <strong>tim vỡ màu xám</strong> từ màn 2 trở đi kẻo bị rơi mất tim nhé!</p>
+          <p class="sub-guide">📱 Điện thoại: Chạm & kéo ngón tay · 💻 Máy tính: Phím A/D hoặc ⬅️ ➡️</p>
+        </div>
+        <p id="savedProgressNotice" class="saved-notice hidden"></p>
+        <button id="btnStartGame" type="button" class="primary-btn pulse-btn">Bắt đầu</button>
+      </div>
+    </section>
+
+    <!-- Popup Tạm dừng -->
+    <section id="screenPause" class="overlay-screen hidden" aria-labelledby="pauseTitle">
+      <div class="card cute-card">
+        <div class="card-badge" aria-hidden="true">⏸️ Đang tạm nghỉ</div>
+        <h2 id="pauseTitle" class="title">Tạm dừng nhặt tim</h2>
+        <p class="subtitle">Nghỉ tay một xíu rồi nhặt tim mở quà tiếp nha!</p>
+        <div class="button-group">
+          <button id="btnResume" type="button" class="primary-btn">Tiếp tục chơi</button>
+          <button id="btnOpenAlbumFromPause" type="button" class="secondary-btn">Xem lại kỷ niệm</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Popup Mở khóa kỷ niệm sau mỗi màn -->
+    <section id="screenLevelClear" class="overlay-screen hidden" aria-labelledby="levelClearTitle">
+      <div class="card cute-card card-open-anim">
+        <div id="levelClearBadge" class="card-badge">🎉 Mở khóa kỷ niệm 1/5</div>
+        <h2 id="levelClearTitle" class="title">Tuyệt vời quá!</h2>
+        <div id="levelPhotoFrame" class="photo-frame">
+          <img id="levelPhotoImg" alt="Ảnh kỷ niệm" />
+          <div id="levelPhotoFallback" class="photo-fallback hidden">
+            <div class="fallback-icon">📸💖</div>
+            <div id="levelFallbackTitle" class="fallback-title">Kỷ niệm ngọt ngào</div>
+            <div id="levelFallbackPath" class="fallback-path"></div>
+          </div>
+        </div>
+        <blockquote id="levelMessageText" class="love-quote"></blockquote>
+        <button id="btnNextLevel" type="button" class="primary-btn">Chơi tiếp</button>
+      </div>
+    </section>
+
+    <!-- 5. Màn hình Chiến thắng (Sau màn 5) -->
+    <section id="screenVictory" class="overlay-screen hidden" aria-labelledby="victoryTitle">
+      <div class="card cute-card victory-card card-open-anim">
+        <div class="card-badge">👑 Chúc mừng 19/11</div>
+        <h1 id="victoryTitle" class="title">Món quà đặc biệt dành tặng <span id="victoryBoyfriendName"></span></h1>
+        <div id="finalPhotoFrame" class="photo-frame final-photo-frame">
+          <img id="finalPhotoImg" alt="Ảnh kỷ niệm đặc biệt" />
+          <div id="finalPhotoFallback" class="photo-fallback hidden">
+            <div class="fallback-icon">🌷💑🌷</div>
+            <div class="fallback-title">Khung ảnh kỷ niệm 19/11</div>
+            <div id="finalFallbackPath" class="fallback-path"></div>
+          </div>
+        </div>
+        <div class="letter-box">
+          <p id="finalMessageTypewriter" class="typewriter-text" aria-live="polite"></p>
+        </div>
+        <div class="button-group">
+          <button id="btnOpenAlbum" type="button" class="primary-btn">Xem lại kỷ niệm</button>
+          <button id="btnPlayAgain" type="button" class="secondary-btn">Chơi lại</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Modal Album 5 ảnh đã mở khóa -->
+    <section id="screenAlbum" class="overlay-screen hidden" aria-labelledby="albumTitle">
+      <div class="card cute-card album-card">
+        <div class="album-header">
+          <h2 id="albumTitle" class="title">Album Kỷ Niệm Của Tụi Mình 💕</h2>
+          <button id="btnCloseAlbum" type="button" class="close-btn" aria-label="Đóng album">✕</button>
+        </div>
+        <div id="albumGrid" class="album-grid"></div>
+        <div class="album-footer">
+          <button id="btnBackFromAlbum" type="button" class="primary-btn">Đóng Album</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Nạp file cấu hình trước, sau đó nạp logic game (kèm version query chống cache trình duyệt) -->
+  <script src="config.js?v=3.5"></script>
+  <script src="game.js?v=3.5"></script>
+</body>
+</html>
