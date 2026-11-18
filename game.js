@@ -7,8 +7,7 @@
   "use strict";
 
   // Khoá lưu tiến độ trên trình duyệt (localStorage)
-  const STORAGE_KEY = "nhat_tim_19_11_progress_v2";
-  const OLD_STORAGE_KEY = "nhat_tim_19_11_progress_v1";
+  const STORAGE_KEY = "nhat_tim_19_11_progress_v3";
 
   // Kiểm tra cấu hình từ config.js
   const cfg = typeof CONFIG !== "undefined" ? CONFIG : {};
@@ -205,12 +204,7 @@
   // ==========================================================================
   function loadProgress() {
     try {
-      let raw = window.localStorage.getItem(STORAGE_KEY);
-      let isOldVersion = false;
-      if (!raw) {
-        raw = window.localStorage.getItem(OLD_STORAGE_KEY);
-        isOldVersion = true;
-      }
+      const raw = window.localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
       const data = JSON.parse(raw);
       if (data && typeof data === "object") {
@@ -220,15 +214,11 @@
           state.currentLevel = data.currentLevel;
         }
         if (
-          !isOldVersion &&
           Number.isInteger(data.heartsCollected) &&
           data.heartsCollected >= 0 &&
           data.heartsCollected < HEARTS_PER_LEVEL
         ) {
           state.heartsCollected = data.heartsCollected;
-        } else {
-          // Luôn reset số tim nhặt về 0 khi bắt đầu phiên mới hoặc chuyển sang mốc 5 tim
-          state.heartsCollected = 0;
         }
         if (Array.isArray(data.unlockedLevels)) {
           state.unlockedLevels = data.unlockedLevels.filter(
@@ -240,7 +230,6 @@
           state.isMuted = data.isMuted;
         }
       }
-      saveProgress();
     } catch (err) {
       // Nếu trình duyệt chặn localStorage (ẩn danh nghiêm ngặt), game vẫn chạy bình thường
       console.warn("Không thể đọc localStorage, tiếp tục chạy ở chế độ bộ nhớ tạm:", err);

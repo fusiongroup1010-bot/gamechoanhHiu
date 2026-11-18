@@ -11,7 +11,7 @@
 
 const CONFIG = {
   boyfriendName: "Anh yêu",
-  password: "DDMMYYYY",          // ngày yêu nhau (ví dụ: "14022023")
+  password: "16072026",          // ngày yêu nhau (16/07/2026)
   passwordHint: "Ngày mình chính thức yêu nhau",
   heartsPerLevel: 5,             // mỗi vòng chơi cần nhặt 5 quả tim
   levels: [
