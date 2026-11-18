@@ -23,5 +23,5 @@ const CONFIG = {
   ],
   finalImage: "assets/images/final.jpg",
   finalMessage: "Chúc anh iu cụa em ngày 19/11 zui zẻ nha, em làm hơi vội nên hơi đơn sơ. Lần sau em làm đẹp hơn nữa nhó ❤️",
-  music: "assets/audio/music.mp3"
+  music: "assets/audio/music.mp3?v=5.0"
 };
